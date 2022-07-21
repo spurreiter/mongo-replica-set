@@ -1,0 +1,66 @@
+# https://docs.docker.com/compose/compose-file/compose-file-v3/#command
+version: "3.8"
+
+services:
+  mongo-init:
+    image: mongo:6
+    networks:
+      - mongo-rs-net
+    volumes:
+      - "./setup:/setup:ro"
+    env_file:
+      - .env
+    restart: "no"
+    command: /setup/init.sh mongo1:27017/admin 10
+
+  mongo1:
+    image: mongo:6
+    networks:
+      - mongo-rs-net
+    ports:
+      - "27017:27017"
+    volumes:
+      - "./setup:/setup:ro"
+      - "./setup/replset.key:/replset.key:ro"
+      - "mongodata1:/data/db"
+    env_file:
+      - .env
+    restart: always
+    command: --auth --replSet $MONGO_RS --keyFile /replset.key --bind_ip_all --port 27017
+
+  mongo2:
+    image: mongo:6
+    networks:
+      - mongo-rs-net
+    ports:
+      - "27018:27017"
+    volumes:
+      - "./setup/replset.key:/replset.key:ro"
+      - "mongodata2:/data/db"
+    env_file:
+      - .env
+    restart: always
+    command: --auth --replSet $MONGO_RS --keyFile /replset.key --bind_ip_all --port 27018
+
+  mongo3:
+    image: mongo:6
+    networks:
+      - mongo-rs-net
+    ports:
+      - "27019:27017"
+    volumes:
+      - "./setup/replset.key:/replset.key:ro"
+      - "mongodata3:/data/db"
+    env_file:
+      - .env
+    restart: always
+    command: --auth --replSet $MONGO_RS --keyFile /replset.key --bind_ip_all --port 27019
+
+volumes:
+  mongodata1:
+  mongodata2:
+  mongodata3:
+
+networks:
+  mongo-rs-net:
+    # driver: bridge

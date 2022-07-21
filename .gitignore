@@ -1,4 +1,5 @@
+setup/replset.key
 *.tgz
 *.log
 .DS_Store
-
+.env*
